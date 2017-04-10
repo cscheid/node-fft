@@ -21,25 +21,25 @@
 // The following code assumes a complex number is
 // an array: [real, imaginary]
 //-------------------------------------------------
-var complex = require('./complex'),
-    fftUtil = require('./fftutil'),
-    twiddle = require('bit-twiddle');
 
-module.exports = {
-  //-------------------------------------------------
-  // Calculate FFT for vector where vector.length
-  // is assumed to be a power of 2.
-  //-------------------------------------------------
-  fft: function fft(vector) {
+//-------------------------------------------------
+// Calculate FFT for vector where vector.length
+// is assumed to be a power of 2.
+//-------------------------------------------------
+
+import {multiply, add, subtract} from "./complex";
+import {exponent} from "./fftutil";
+
+export function fft(vector) {
     var X = [],
         N = vector.length;
 
     // Base case is X = x + 0i since our input is assumed to be real only.
     if (N == 1) {
-      if (Array.isArray(vector[0])) //If input vector contains complex numbers
-        return [[vector[0][0], vector[0][1]]];      
-      else
-        return [[vector[0], 0]];
+        if (Array.isArray(vector[0])) //If input vector contains complex numbers
+            return [[vector[0][0], vector[0][1]]];      
+        else
+            return [[vector[0], 0]];
     }
 
     // Recurse: all even samples
@@ -50,57 +50,21 @@ module.exports = {
 
     // Now, perform N/2 operations!
     for (var k = 0; k < N / 2; k++) {
-      // t is a complex number!
-      var t = X_evens[k],
-          e = complex.multiply(fftUtil.exponent(k, N), X_odds[k]);
+        // t is a complex number!
+        var t = X_evens[k],
+            e = multiply(exponent(k, N), X_odds[k]);
 
-      X[k] = complex.add(t, e);
-      X[k + (N / 2)] = complex.subtract(t, e);
+        X[k] = add(t, e);
+        X[k + (N / 2)] = subtract(t, e);
     }
 
     function even(__, ix) {
-      return ix % 2 == 0;
+        return ix % 2 == 0;
     }
 
     function odd(__, ix) {
-      return ix % 2 == 1;
+        return ix % 2 == 1;
     }
 
     return X;
-  },
-  //-------------------------------------------------
-  // Calculate FFT for vector where vector.length
-  // is assumed to be a power of 2.  This is the in-
-  // place implementation, to avoid the memory
-  // footprint used by recursion.
-  //-------------------------------------------------
-  fftInPlace: function(vector) {
-    var N = vector.length;
-
-    var trailingZeros = twiddle.countTrailingZeros(N); //Once reversed, this will be leading zeros
-
-    // Reverse bits
-    for (var k = 0; k < N; k++) {
-      var p = twiddle.reverse(k) >>> (twiddle.INT_BITS - trailingZeros);
-      if (p > k) {
-        var complexTemp = [vector[k], 0];
-        vector[k] = vector[p];
-        vector[p] = complexTemp;
-      } else {
-        vector[p] = [vector[p], 0];
-      }
-    }
-
-    //Do the DIT now in-place
-    for (var len = 2; len <= N; len += len) {
-      for (var i = 0; i < len / 2; i++) {
-        var w = fftUtil.exponent(i, len);
-        for (var j = 0; j < N / len; j++) {
-          var t = complex.multiply(w, vector[j * len + i + len / 2]);
-          vector[j * len + i + len / 2] = complex.subtract(vector[j * len + i], t);
-          vector[j * len + i] = complex.add(vector[j * len + i], t);
-        }
-      }
-    }
-  }
-};
+}

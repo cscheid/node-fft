@@ -11,9 +11,10 @@
 // The following code assumes a complex number is
 // an array: [real, imaginary]
 //-------------------------------------------------
-var complex = require('./complex');
 
+import { magnitude } from "./complex";
 
+var mapExponent = {};
 //-------------------------------------------------
 // By Eulers Formula:
 //
@@ -23,20 +24,19 @@ var complex = require('./complex');
 //
 // x = -2*PI*(k/N)
 //-------------------------------------------------
-var mapExponent = {},
-    exponent = function (k, N) {
-      var x = -2 * Math.PI * (k / N);
-
-      mapExponent[N] = mapExponent[N] || {};
-      mapExponent[N][k] = mapExponent[N][k] || [Math.cos(x), Math.sin(x)];// [Real, Imaginary]
-
-      return mapExponent[N][k];
-};
+export function exponent(k, N) {
+    var x = -2 * Math.PI * (k / N);
+    
+    mapExponent[N] = mapExponent[N] || {};
+    mapExponent[N][k] = mapExponent[N][k] || [Math.cos(x), Math.sin(x)];// [Real, Imaginary]
+    
+    return mapExponent[N][k];
+}
 
 //-------------------------------------------------
 // Calculate FFT Magnitude for complex numbers.
 //-------------------------------------------------
-var fftMag = function (fftBins) {
+export function fftMag(fftBins) {
     var ret = fftBins.map(complex.magnitude);
     return ret.slice(0, ret.length / 2);
 };
@@ -48,20 +48,11 @@ var fftMag = function (fftBins) {
 // each FFT bin provided, assuming the sampleRate is
 // samples taken per second.
 //-------------------------------------------------
-var fftFreq = function (fftBins, sampleRate) {
+export function fftFreq(fftBins, sampleRate) {
     var stepFreq = sampleRate / (fftBins.length);
     var ret = fftBins.slice(0, fftBins.length / 2);
 
     return ret.map(function (__, ix) {
         return ix * stepFreq;
     });
-};
-
-//-------------------------------------------------
-// Exports
-//-------------------------------------------------
-module.exports = {
-    fftMag: fftMag,
-    fftFreq: fftFreq,
-    exponent: exponent
 };
