@@ -30,12 +30,12 @@
 import {multiply, add, subtract} from "./complex";
 import {exponent} from "./fftutil";
 
-export function fft(vector) {
+function fftInternal(vector) {
     var X = [],
         N = vector.length;
 
     // Base case is X = x + 0i since our input is assumed to be real only.
-    if (N == 1) {
+    if (N === 1) {
         if (Array.isArray(vector[0])) //If input vector contains complex numbers
             return [[vector[0][0], vector[0][1]]];      
         else
@@ -43,10 +43,10 @@ export function fft(vector) {
     }
 
     // Recurse: all even samples
-    var X_evens = fft(vector.filter(even)),
+    var X_evens = fftInternal(vector.filter(even)),
 
         // Recurse: all odd samples
-        X_odds  = fft(vector.filter(odd));
+        X_odds  = fftInternal(vector.filter(odd));
 
     // Now, perform N/2 operations!
     for (var k = 0; k < N / 2; k++) {
@@ -67,4 +67,14 @@ export function fft(vector) {
     }
 
     return X;
+}
+
+export function fft(vector) {
+    var result = fftInternal(vector);
+    var N = vector.length, f = Math.sqrt(N);
+    for (var i=0; i<N; ++i) {
+        result[i][0] /= f;
+        result[i][1] /= f;
+    }
+    return result;
 }

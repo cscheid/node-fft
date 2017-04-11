@@ -25,6 +25,15 @@ export function multiply(a, b)
             (a[0] * b[1] + a[1] * b[0])];
 }
 
+export function multiplyVec(a, b)
+{
+    var result = [];
+    for (var i=0; i<a.length; ++i) {
+        result.push(multiply(a[i], b[i]));
+    }
+    return result;
+}
+
 //-------------------------------------------------
 // Calculate |a + bi|
 //
